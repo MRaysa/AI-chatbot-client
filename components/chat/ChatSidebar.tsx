@@ -1,8 +1,7 @@
 'use client';
 
 import { useChat } from '@/contexts/ChatContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import ProfileMenu from './ProfileMenu';
 
 interface ChatSidebarProps {
   onClose?: () => void;
@@ -10,13 +9,6 @@ interface ChatSidebarProps {
 
 export default function ChatSidebar({ onClose }: ChatSidebarProps) {
   const { chats, currentChat, createNewChat, selectChat, deleteChat } = useChat();
-  const { user, signOut } = useAuth();
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/login');
-  };
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -108,30 +100,9 @@ export default function ChatSidebar({ onClose }: ChatSidebarProps) {
         )}
       </div>
 
-      {/* User Profile */}
+      {/* User Profile Menu */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-            {user?.email?.[0].toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {user?.displayName || user?.email}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {user?.email}
-            </p>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            title="Sign out"
-          >
-            <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
+        <ProfileMenu />
       </div>
     </div>
   );
