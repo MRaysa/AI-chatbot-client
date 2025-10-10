@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ AI Chat Boot - Frontend
+# ⚡ ChatMind - Frontend
 
 ### *Next.js 14 Web Application with Modern UI*
 
@@ -11,7 +11,7 @@
 [![Firebase](https://img.shields.io/badge/Firebase-Client-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![Stripe](https://img.shields.io/badge/Stripe-Checkout-008CDD?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com/)
 
-**Location:** `D:\All website project\AI Chat boot\ai-chat-boot-frontend`
+**Location:** `D:\All website project\ChatMind\ai-chat-boot-frontend`
 
 </div>
 
@@ -19,7 +19,7 @@
 
 ## 📋 Overview
 
-This is the frontend application for AI Chat Boot, built with Next.js 14 App Router, React 18, TypeScript, and Tailwind CSS. It provides a modern, responsive interface for AI-powered conversations with subscription management.
+This is the frontend application for ChatMind, built with Next.js 14 App Router, React 18, TypeScript, and Tailwind CSS. It provides a modern, responsive interface for AI-powered conversations with subscription management.
 
 ## ✨ Features
 
@@ -75,7 +75,7 @@ This is the frontend application for AI Chat Boot, built with Next.js 14 App Rou
 ## 📁 Project Structure
 
 ```
-D:\All website project\AI Chat boot\ai-chat-boot-frontend\
+D:\All website project\ChatMind\ai-chat-boot-frontend\
 │
 ├── 📂 app/                                      # Next.js 14 App Router
 │   ├── 📂 (auth)/                              # Authentication group
@@ -168,7 +168,7 @@ D:\All website project\AI Chat boot\ai-chat-boot-frontend\
 
 ```bash
 # Navigate to frontend directory
-cd "D:\All website project\AI Chat boot\ai-chat-boot-frontend"
+cd "D:\All website project\ChatMind\ai-chat-boot-frontend"
 
 # Install dependencies (pnpm recommended)
 pnpm install
@@ -502,7 +502,7 @@ For frontend-specific issues:
 
 **Built with Next.js 14, React & Tailwind CSS** ⚡
 
-*Part of the AI Chat Boot platform*
+*Part of the ChatMind platform*
 
 ### 👩‍💻 Built By
 
