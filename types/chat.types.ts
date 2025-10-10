@@ -21,4 +21,5 @@ export interface ChatContextType {
   createNewChat: () => void;
   selectChat: (chatId: string) => void;
   deleteChat: (chatId: string) => void;
+  renameChat: (chatId: string, newTitle: string) => Promise<void>;
 }

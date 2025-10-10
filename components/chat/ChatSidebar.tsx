@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useChat } from '@/contexts/ChatContext';
 import ProfileMenu from './ProfileMenu';
 
@@ -8,7 +9,9 @@ interface ChatSidebarProps {
 }
 
 export default function ChatSidebar({ onClose }: ChatSidebarProps) {
-  const { chats, currentChat, createNewChat, selectChat, deleteChat } = useChat();
+  const { chats, currentChat, createNewChat, selectChat, deleteChat, renameChat } = useChat();
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -19,6 +22,24 @@ export default function ChatSidebar({ onClose }: ChatSidebarProps) {
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
     return new Date(date).toLocaleDateString();
+  };
+
+  const handleStartEdit = (chatId: string, currentTitle: string) => {
+    setEditingChatId(chatId);
+    setEditingTitle(currentTitle);
+  };
+
+  const handleSaveEdit = async (chatId: string) => {
+    if (editingTitle.trim() && editingTitle !== chats.find(c => c.id === chatId)?.title) {
+      await renameChat(chatId, editingTitle.trim());
+    }
+    setEditingChatId(null);
+    setEditingTitle('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingChatId(null);
+    setEditingTitle('');
   };
 
   return (
@@ -76,24 +97,76 @@ export default function ChatSidebar({ onClose }: ChatSidebarProps) {
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm">
-                    {chat.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {formatDate(chat.updatedAt)}
-                  </p>
+                  {editingChatId === chat.id ? (
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEdit(chat.id);
+                          } else if (e.key === 'Escape') {
+                            handleCancelEdit();
+                          }
+                        }}
+                        className="flex-1 px-2 py-1 text-sm bg-white dark:bg-gray-800 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleSaveEdit(chat.id)}
+                        className="p-1 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-all"
+                      >
+                        <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-all"
+                      >
+                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                        {chat.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {formatDate(chat.updatedAt)}
+                      </p>
+                    </>
+                  )}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteChat(chat.id);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-all"
-                >
-                  <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                {editingChatId !== chat.id && (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartEdit(chat.id, chat.title);
+                      }}
+                      className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-all"
+                    >
+                      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteChat(chat.id);
+                      }}
+                      className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-all"
+                    >
+                      <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))

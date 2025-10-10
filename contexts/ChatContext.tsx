@@ -95,6 +95,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const renameChat = async (chatId: string, newTitle: string) => {
+    try {
+      await api.patch(`/chats/${chatId}`, { title: newTitle });
+      setChats(chats.map((c) => (c.id === chatId ? { ...c, title: newTitle, updatedAt: new Date() } : c)));
+      if (currentChat?.id === chatId) {
+        setCurrentChat({ ...currentChat, title: newTitle, updatedAt: new Date() });
+      }
+    } catch (error) {
+      console.error('Failed to rename chat:', error);
+    }
+  };
+
   const sendMessage = async (content: string) => {
     let chatToUse = currentChat;
 
@@ -186,6 +198,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         createNewChat,
         selectChat,
         deleteChat,
+        renameChat,
       }}
     >
       {children}
