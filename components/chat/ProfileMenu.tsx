@@ -168,7 +168,13 @@ export default function ProfileMenu({ onClose }: ProfileMenuProps) {
                   <p className="text-xs text-gray-500 dark:text-gray-400">Free</p>
                 </div>
               </div>
-              <button className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-md hover:from-blue-700 hover:to-purple-700 transition-all">
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  router.push('/pricing');
+                }}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-md hover:from-blue-700 hover:to-purple-700 transition-all"
+              >
                 Upgrade
               </button>
             </div>
