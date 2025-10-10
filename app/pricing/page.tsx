@@ -1,14 +1,33 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Check, ArrowLeft, Sparkles } from 'lucide-react';
+import SubscriptionSuccessModal from '@/components/subscription/SubscriptionSuccessModal';
 
 export default function PricingPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const { user, userProfile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  const currentPlan = userProfile?.subscriptionPlan || 'free';
+
+  // Refresh profile when returning from Stripe checkout
+  useEffect(() => {
+    const sessionIdParam = searchParams.get('session_id');
+    if (sessionIdParam && user) {
+      setSessionId(sessionIdParam);
+      // Wait a bit for webhook to process, then refresh and show modal
+      setTimeout(() => {
+        refreshProfile();
+        setShowSuccessModal(true);
+      }, 2000);
+    }
+  }, [searchParams, user, refreshProfile]);
 
   const plans = [
     {
@@ -22,9 +41,9 @@ export default function PricingPage() {
         'Standard response time',
         'Community support',
       ],
-      current: true,
-      buttonText: 'Current Plan',
-      buttonDisabled: true,
+      current: currentPlan === 'free',
+      buttonText: currentPlan === 'free' ? 'Current Plan' : 'Downgrade',
+      buttonDisabled: currentPlan === 'free',
       planId: 'free',
     },
     {
@@ -34,15 +53,17 @@ export default function PricingPage() {
       description: 'For professionals who need more power',
       features: [
         'Unlimited messages',
-        'Advanced AI model (GPT-4)',
+        'Advanced AI model (GPT-5)',
         'Priority response time',
         'Email support',
         'Custom instructions',
         'Chat history export',
         'API access',
       ],
-      popular: true,
-      buttonText: 'Upgrade to Pro',
+      popular: currentPlan === 'free',
+      current: currentPlan === 'pro',
+      buttonText: currentPlan === 'pro' ? 'Current Plan' : 'Upgrade to Pro',
+      buttonDisabled: currentPlan === 'pro',
       gradient: 'from-blue-600 to-purple-600',
       planId: 'pro',
     },
@@ -61,13 +82,15 @@ export default function PricingPage() {
         'Custom integrations',
         'Dedicated account manager',
       ],
-      buttonText: 'Contact Sales',
+      current: currentPlan === 'team',
+      buttonText: currentPlan === 'team' ? 'Current Plan' : 'Contact Sales',
+      buttonDisabled: currentPlan === 'team',
       gradient: 'from-purple-600 to-pink-600',
       planId: 'team',
     },
   ];
 
-  const handleUpgrade = async (planName: string, planId: string) => {
+  const handleUpgrade = async (planId: string) => {
     if (!user) {
       router.push('/auth/login');
       return;
@@ -142,13 +165,22 @@ export default function PricingPage() {
               key={plan.name}
               className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
                 plan.popular ? 'ring-2 ring-blue-600 dark:ring-purple-500' : ''
-              }`}
+              } ${plan.current ? 'ring-2 ring-green-500 dark:ring-green-400' : ''}`}
             >
               {/* Popular Badge */}
-              {plan.popular && (
+              {plan.popular && !plan.current && (
                 <div className="absolute top-0 right-0">
                   <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
                     MOST POPULAR
+                  </div>
+                </div>
+              )}
+
+              {/* Current Plan Badge */}
+              {plan.current && (
+                <div className="absolute top-0 right-0">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
+                    CURRENT PLAN
                   </div>
                 </div>
               )}
@@ -176,7 +208,7 @@ export default function PricingPage() {
 
                 {/* CTA Button */}
                 <button
-                  onClick={() => handleUpgrade(plan.name, plan.planId)}
+                  onClick={() => handleUpgrade(plan.planId)}
                   disabled={plan.buttonDisabled || loading === plan.planId}
                   className={`w-full py-3 px-6 rounded-lg font-semibold text-white transition-all duration-200 mb-8 ${
                     plan.buttonDisabled
@@ -222,6 +254,18 @@ export default function PricingPage() {
           </p>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && sessionId && (
+        <SubscriptionSuccessModal
+          sessionId={sessionId}
+          onClose={() => {
+            setShowSuccessModal(false);
+            // Remove session_id from URL
+            router.replace('/pricing');
+          }}
+        />
+      )}
     </div>
   );
 }

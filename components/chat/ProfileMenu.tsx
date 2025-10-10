@@ -10,11 +10,14 @@ interface ProfileMenuProps {
 }
 
 export default function ProfileMenu({ onClose }: ProfileMenuProps) {
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const currentPlan = userProfile?.subscriptionPlan || 'free';
+  const planDisplay = currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
 
   const handleSignOut = async () => {
     await signOut();
@@ -106,7 +109,7 @@ export default function ProfileMenu({ onClose }: ProfileMenuProps) {
           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
             {user?.displayName || user?.email}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Free</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{planDisplay}</p>
         </div>
       </button>
 
@@ -165,18 +168,25 @@ export default function ProfileMenu({ onClose }: ProfileMenuProps) {
                   <p className="text-xs font-medium text-gray-900 dark:text-white truncate max-w-[120px]">
                     {user?.displayName || 'User'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Free</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{planDisplay}</p>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  setShowMenu(false);
-                  router.push('/pricing');
-                }}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-md hover:from-blue-700 hover:to-purple-700 transition-all"
-              >
-                Upgrade
-              </button>
+              {currentPlan === 'free' && (
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    router.push('/pricing');
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-md hover:from-blue-700 hover:to-purple-700 transition-all"
+                >
+                  Upgrade
+                </button>
+              )}
+              {currentPlan !== 'free' && (
+                <div className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                  {planDisplay}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -17,6 +17,25 @@ module.exports = {
           700: '#0369a1',
         },
       },
+      animation: {
+        'gradient-x': 'gradient-x 15s ease infinite',
+        'spin-slow': 'spin 8s linear infinite',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce': 'bounce 1s infinite',
+        'ping': 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite',
+      },
+      keyframes: {
+        'gradient-x': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          },
+        },
+      },
     },
   },
   plugins: [],

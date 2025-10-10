@@ -14,21 +14,46 @@ import {
 import { auth } from '@/lib/firebase';
 import api from '@/lib/api';
 
+interface UserProfile {
+  subscriptionPlan: 'free' | 'pro' | 'team';
+  subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'trialing';
+}
+
 interface AuthContextType {
   user: User | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   signUp: (email: string, password: string, displayName?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserProfile = async (idToken: string) => {
+    try {
+      const response = await api.get('/users/profile', {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      if (response.data.success) {
+        setUserProfile({
+          subscriptionPlan: response.data.data.user.subscriptionPlan || 'free',
+          subscriptionStatus: response.data.data.user.subscriptionStatus,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      setUserProfile({ subscriptionPlan: 'free' });
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -39,12 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem('authToken', idToken);
           await api.post('/auth/verify', { idToken });
           setUser(firebaseUser);
+          await fetchUserProfile(idToken);
         } catch (error) {
           console.error('Failed to sync user with backend:', error);
         }
       } else {
         localStorage.removeItem('authToken');
         setUser(null);
+        setUserProfile(null);
       }
       setLoading(false);
     });
@@ -93,16 +120,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendPasswordResetEmail(auth, email);
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      const idToken = await user.getIdToken();
+      await fetchUserProfile(idToken);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
+        userProfile,
         loading,
         signUp,
         signIn,
         signInWithGoogle,
         signOut,
         resetPassword,
+        refreshProfile,
       }}
     >
       {children}
