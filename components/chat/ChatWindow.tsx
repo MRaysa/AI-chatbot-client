@@ -11,8 +11,12 @@ interface ChatWindowProps {
 }
 
 export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
-  const { currentChat, loading } = useChat();
+  const { currentChat, loading, sendMessage } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleSuggestionClick = async (suggestionText: string) => {
+    await sendMessage(suggestionText);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,9 +79,10 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
                   { icon: '🔍', text: 'Research information', color: 'from-purple-500 to-pink-500' },
                   { icon: '🎯', text: 'Solve a problem', color: 'from-green-500 to-teal-500' },
                 ].map((suggestion, index) => (
-                  <div
+                  <button
                     key={index}
-                    className="p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer border border-gray-200 dark:border-gray-700"
+                    onClick={() => handleSuggestionClick(suggestion.text)}
+                    className="p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 text-left w-full"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{suggestion.icon}</span>
@@ -85,7 +90,7 @@ export default function ChatWindow({ onMenuClick }: ChatWindowProps) {
                         {suggestion.text}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
